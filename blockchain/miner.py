@@ -1,46 +1,35 @@
 import hashlib
 import requests
-
 import sys
-
 from uuid import uuid4
-
 from timeit import default_timer as timer
-
 import random
+import json
 
 
 def proof_of_work(last_proof):
-    """
-    Multi-Ouroboros of Work Algorithm
-    - Find a number p' such that the last six digits of hash(p) are equal
-    to the first six digits of hash(p')
-    - IE:  last_hash: ...AE9123456, new hash 123456888...
-    - p is the previous proof, and p' is the new proof
-    - Use the same method to generate SHA-256 hashes as the examples in class
-    """
-
     start = timer()
+    
+    block_string = json.dumps(last_proof, sort_keys=True)
 
     print("Searching for next proof")
-    proof = 0
-    #  TODO: Your code here
+    # addon = 10000000
+    # passalong = str(last_proof)[-6:]
+    proof = 100000
+
+    while valid_proof(block_string, proof) is False:
+        proof += 1
 
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
     return proof
 
 
 def valid_proof(last_hash, proof):
-    """
-    Validates the Proof:  Multi-ouroborus:  Do the last six characters of
-    the hash of the last proof match the first six characters of the hash
-    of the new proof?
 
-    IE:  last_hash: ...AE9123456, new hash 123456E88...
-    """
+    guess = f'{last_hash}{proof}'.encode()
+    guess_hash = hashlib.sha256(guess).hexdigest()
 
-    # TODO: Your code here!
-    pass
+    return guess_hash[0:6] == last_hash[-6:]
 
 
 if __name__ == '__main__':
@@ -72,7 +61,14 @@ if __name__ == '__main__':
                      "id": id}
 
         r = requests.post(url=node + "/mine", json=post_data)
-        data = r.json()
+        try:
+            data = r.json()
+        except ValueError:
+            print("Error:  Non-json response")
+            print("Response returned:")
+            print(r)
+            break
+
         if data.get('message') == 'New Block Forged':
             coins_mined += 1
             print("Total coins mined: " + str(coins_mined))
