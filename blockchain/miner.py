@@ -16,7 +16,7 @@ def proof_of_work(last_proof):
 
     print("Searching for next proof")
     
-    proof = 100000
+    proof = 0
 
     while valid_proof(hashed, proof) is False:
         proof += 1
