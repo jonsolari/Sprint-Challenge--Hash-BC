@@ -10,14 +10,15 @@ import json
 def proof_of_work(last_proof):
     start = timer()
     
-    block_string = json.dumps(last_proof, sort_keys=True)
+    block_string = str(last_proof).encode()
+
+    hashed = hashlib.sha256(block_string).hexdigest()
 
     print("Searching for next proof")
-    # addon = 10000000
-    # passalong = str(last_proof)[-6:]
+    
     proof = 100000
 
-    while valid_proof(block_string, proof) is False:
+    while valid_proof(hashed, proof) is False:
         proof += 1
 
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
@@ -26,10 +27,10 @@ def proof_of_work(last_proof):
 
 def valid_proof(last_hash, proof):
 
-    guess = f'{last_hash}{proof}'.encode()
+    guess = f'{proof}'.encode()
     guess_hash = hashlib.sha256(guess).hexdigest()
 
-    return guess_hash[0:6] == last_hash[-6:]
+    return guess_hash[:6] == last_hash[-6:]
 
 
 if __name__ == '__main__':
